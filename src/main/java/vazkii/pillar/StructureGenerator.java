@@ -10,13 +10,20 @@
  */
 package vazkii.pillar;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockStoneBrick;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.EnumFaceDirection;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -26,11 +33,21 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
+import net.minecraft.world.storage.loot.LootTableList;
 import vazkii.pillar.proxy.CommonProxy;
 import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureGenerator {
-
+	
+	private static final HashMap<String, DataHandler> dataHandlers = new HashMap();
+	
+	static {
+		dataHandlers.put("run", StructureGenerator::commandRun);
+		dataHandlers.put("chest", StructureGenerator::commandChest);
+		dataHandlers.put("spawner", StructureGenerator::commandSpawner);
+		dataHandlers.put("struct", StructureGenerator::commandStruct);
+	}
+	
 	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, WorldServer world, BlockPos pos) {
 		if(pos == null)
 			return false;
@@ -71,7 +88,7 @@ public final class StructureGenerator {
 						BlockPos currPos = finalPos.add(template.transformedBlockPos(settings, new BlockPos(i, j, k)));
 						IBlockState state = world.getBlockState(currPos);
 						if(state.getBlock() == Blocks.STONEBRICK && state.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
-							world.setBlockState(currPos, state.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED));
+							world.setBlockState(currPos, state.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED), 0);
 					}
 		}
 
@@ -95,7 +112,7 @@ public final class StructureGenerator {
 								if(schema.decay > 0 && newState.getBlock() == Blocks.STONEBRICK && newState.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
 									newState = newState.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED);
 								
-								world.setBlockState(checkPos, newState);
+								world.setBlockState(checkPos, newState, 0);
 							} else break;
 
 							if(checkPos.getY() == 0)
@@ -105,9 +122,73 @@ public final class StructureGenerator {
 						}
 					}
 		}
+		
+        Map<BlockPos, String> dataBlocks = template.getDataBlocks(finalPos, settings);
+
+        for(Entry<BlockPos, String> entry : dataBlocks.entrySet()) {
+        	BlockPos entryPos = entry.getKey();
+        	String data = entry.getValue();
+        	world.setBlockState(entryPos, Blocks.AIR.getDefaultState(), 0);
+        	handleData(rand, schema, settings, entryPos, data, world);
+        }
 
 		return true;
 	}
+	
+	private static void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		if(data == null || data.isEmpty())
+			return;
+		
+		// TODO Function handling
+		
+		data = data.replaceAll("\\/\\*\\*.*", "").trim();
+		String command = data.replaceAll("\\s.*", "").toLowerCase();
+		
+		if(dataHandlers.containsKey(command)) {
+			data = data.replaceAll(".*\\s", "");
+			dataHandlers.get(command).handleData(rand, schema, settings, pos, data, world);
+		}
+	}
+	
+	private static void commandRun(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		
+	}
+	
+	private static void commandChest(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		String[] tokens = data.split("\\s");
+		
+		if(tokens.length == 0)
+			return;
+		
+		String orientation = tokens.length == 1 ? "" : tokens[0];
+		String lootTable = tokens.length == 1 ? tokens[0] : tokens[1];
+		
+		EnumFacing facing = EnumFacing.byName(orientation);
+		if(facing == null)
+			facing = EnumFacing.SOUTH;
+		
+		facing = settings.getRotation().rotate(facing);
+		
+		world.setBlockState(pos, Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing));
+		
+		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
+		chest.setLootTable(new ResourceLocation(lootTable), rand.nextLong());
+	}
+	
+	private static void commandSpawner(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		
+	}
+	
+	private static void commandStruct(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		
+	}
+	
+	private static String[] tokenize(String data) {
+		return data.split("\\s*(?<!\\);\\s*");
+	}
 
-
+	private static interface DataHandler {
+		public void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world);
+	}
+	
 }
