@@ -14,6 +14,7 @@ import java.util.List;
 
 import net.minecraft.util.Mirror;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Rotation;
 import net.minecraft.world.storage.loot.LootTable;
 import vazkii.pillar.StructureLoader;
 
@@ -22,9 +23,12 @@ public final class StructureSchema {
 	public transient String structureName;
 	
 	public GeneratorType generatorType;
+	public int maxY, minY;
+	
 	public int offsetX, offsetY, offsetZ;
 	public Mirror mirrorType;
-	public int maxY, minY;
+	public Rotation rotation;
+	public boolean ignoreEntities;
 	
 	public List<Integer> dimensionSpawns;
 	public List<String> biomeNameSpawns;
