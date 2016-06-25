@@ -10,6 +10,9 @@
  */
 package vazkii.pillar.command;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -34,16 +37,14 @@ public class CommandPillarSpawn extends CommandBase {
 	public String getCommandUsage(ICommandSender sender) {
 		return "pillar-spawn <structure name> <x> <y> <z>";
 	}
-
-	// TODO tab complete
 	
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-		if(args.length != 4)
+		if(args.length != 4 && args.length != 1)
 			throw new CommandException("Wrong argument length.");
 		
 		String name = args[0];
-        BlockPos pos = parseBlockPos(sender, args, 1, false);
+        BlockPos pos = args.length == 1 ? sender.getPosition() : parseBlockPos(sender, args, 1, false);
 
 		StructureSchema schema = StructureLoader.loadedSchemas.get(name);
 		if(schema == null)
@@ -54,6 +55,16 @@ public class CommandPillarSpawn extends CommandBase {
 			StructureGenerator.placeStructureAtPosition(world.rand, schema, Rotation.NONE, (WorldServer) world, pos);
 		
 		sender.addChatMessage(new TextComponentString("Placed down structure " + name));
+	}
+	
+	@Override
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
+		if(args.length == 1) {
+			List<String> list =  new ArrayList(StructureLoader.loadedSchemas.keySet());
+			return getListOfStringsMatchingLastWord(args, list);
+		}
+		
+		return super.getTabCompletionOptions(server, sender, args, pos);
 	}
 	
 	@Override
