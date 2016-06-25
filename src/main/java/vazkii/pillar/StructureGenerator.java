@@ -47,6 +47,7 @@ import vazkii.pillar.schema.StructureSchema;
 public final class StructureGenerator {
 	
 	private static final HashMap<String, DataHandler> dataHandlers = new HashMap();
+	private static int iteration;
 	
 	static {
 		dataHandlers.put("run", StructureGenerator::commandRun);
@@ -55,17 +56,24 @@ public final class StructureGenerator {
 		dataHandlers.put("struct", StructureGenerator::commandStruct);
 	}
 	
-	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, WorldServer world, BlockPos pos) {
+	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, Rotation baseRotation, WorldServer world, BlockPos pos) {
+		return placeStructureAtPosition(rand, schema, baseRotation, world, pos, 0);
+	}
+	
+	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, Rotation baseRotation, WorldServer world, BlockPos pos, int iteration) {
 		if(pos == null)
 			return false;
 
+		if(iteration > CommonProxy.maximumGenerationIterations)
+			return false;
+		
 		MinecraftServer minecraftserver = world.getMinecraftServer();
 		TemplateManager templatemanager = CommonProxy.templateManager;
 		Template template = templatemanager.func_189942_b(minecraftserver, new ResourceLocation(schema.structureName));
 
 		if(template == null)
 			return false;
-
+		
 		BlockPos size = template.getSize();
 		int top = pos.getY() + size.getY(); 
 		if(top >= 256) {
@@ -73,7 +81,7 @@ public final class StructureGenerator {
 			pos.add(0, -shift, 0);
 		}
 		
-		if(CommonProxy.devMode)
+		if(CommonProxy.devMode && iteration == 0)
 			Pillar.log("Generating Structure " +  schema.structureName + " at " + pos);
 
 		PlacementSettings settings = new PlacementSettings();
@@ -82,7 +90,8 @@ public final class StructureGenerator {
 		Rotation rot = schema.rotation;
 		if(schema.rotation == null)
 			rot = Rotation.values()[rand.nextInt(Rotation.values().length)];
-
+		rot = rot.add(baseRotation);
+		
 		settings.setRotation(rot);
 		settings.setIgnoreEntities(schema.ignoreEntities);
 		settings.setChunk((ChunkPos) null);
@@ -146,13 +155,13 @@ public final class StructureGenerator {
         	BlockPos entryPos = entry.getKey();
         	String data = entry.getValue();
         	world.setBlockState(entryPos, Blocks.AIR.getDefaultState());
-        	handleData(rand, schema, settings, entryPos, data, world);
+        	handleData(rand, schema, settings, entryPos, data, world, iteration);
         }
 
 		return true;
 	}
 	
-	private static void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+	private static void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
 		if(data == null || data.isEmpty())
 			return;
 		
@@ -163,11 +172,11 @@ public final class StructureGenerator {
 		
 		if(dataHandlers.containsKey(command)) {
 			data = data.replaceAll("^.*?\\s", "");
-			dataHandlers.get(command).handleData(rand, schema, settings, pos, data, world);
+			dataHandlers.get(command).handleData(rand, schema, settings, pos, data, world, iteration);
 		}
 	}
 	
-	private static void commandRun(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+	private static void commandRun(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
 		StructureCommandSender.world = world;
 		StructureCommandSender.position = pos;
 		
@@ -178,7 +187,7 @@ public final class StructureGenerator {
 		server.getCommandManager().executeCommand(StructureCommandSender.INSTANCE, data);
 	}
 	
-	private static void commandChest(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+	private static void commandChest(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
 		String[] tokens = data.split("\\s");
 		
 		if(tokens.length == 0)
@@ -199,7 +208,7 @@ public final class StructureGenerator {
 		chest.setLootTable(new ResourceLocation(lootTable), rand.nextLong());
 	}
 	
-	private static void commandSpawner(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+	private static void commandSpawner(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
 		String[] tokens = data.split("\\s");
 		
 		if(tokens.length == 0)
@@ -211,16 +220,68 @@ public final class StructureGenerator {
 		spawner.getSpawnerBaseLogic().setEntityName(tokens[0]);
 	}
 	
-	private static void commandStruct(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
-		// TODO
+	private static void commandStruct(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
+		String[] tokens = data.split("\\s");
+		
+		if(tokens.length == 0)
+			return;
+		
+		String structureName = tokens[0];
+
+		StructureSchema newSchema = StructureLoader.loadedSchemas.get(structureName);
+		if(newSchema == null || newSchema == schema)
+			return;
+		
+		int offX = 0, offY = 0, offZ = 0;
+		
+		if(tokens.length >= 4) {
+			offX = toInt(tokens[1], 0);
+			offY = toInt(tokens[2], 0);
+			offZ = toInt(tokens[3], 0);
+		}
+		
+		Rotation rotation = Rotation.NONE;
+		
+		if(tokens.length >= 5) {
+			String s = tokens[4];
+			System.out.println("rotation is " + s);
+			switch(s) {
+			case "90": 
+			case "-270":
+				rotation = Rotation.CLOCKWISE_90;
+				break;
+			case "180":
+			case "-180":
+				rotation = Rotation.CLOCKWISE_180;
+				break;
+			case "270":
+			case "-90":
+				rotation = Rotation.COUNTERCLOCKWISE_90;
+				break;
+			}
+		}
+		rotation = rotation.add(settings.getRotation());
+	
+		BlockPos finalPos = pos.add(offX, offY, offZ);
+		placeStructureAtPosition(rand, newSchema, rotation, world, finalPos, iteration + 1);
 	}
 	
 	private static String[] tokenize(String data) {
 		return data.split("\\s*(?<!\\);\\s*");
 	}
 
+	private static int toInt(String s, int def) {
+		try {
+			int i = Integer.parseInt(s);
+			return i;
+		} catch(NumberFormatException e) {
+			return def;
+		}
+		
+	}
+	
 	private static interface DataHandler {
-		public void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world);
+		public void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration);
 	}
 	
 	public static class StructureCommandSender implements ICommandSender {
@@ -231,8 +292,8 @@ public final class StructureGenerator {
 		public static BlockPos position;
 
 		@Override
-		public void addChatMessage(ITextComponent p_145747_1_) { 
-			System.out.println(p_145747_1_.getFormattedText());
+		public void addChatMessage(ITextComponent p_145747_1_) {
+			// NO-OP
 		}
 
 		@Override
@@ -288,3 +349,4 @@ public final class StructureGenerator {
 	}
 	
 }
+

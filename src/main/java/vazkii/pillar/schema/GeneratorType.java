@@ -26,6 +26,7 @@ public enum GeneratorType {
 	ABOVE_WATER(GeneratorType::aboveWaterPos),
 	SKY(GeneratorType::skyPos),
 	ANYWHERE(GeneratorType::anywherePos);
+	// TODO NONE
 
 	private GeneratorType(BlockPosProvider provider) {
 		this.provider = provider;

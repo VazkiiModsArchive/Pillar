@@ -14,6 +14,7 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
@@ -34,6 +35,8 @@ public class CommandPillarSpawn extends CommandBase {
 		return "pillar-spawn <structure name> <x> <y> <z>";
 	}
 
+	// TODO tab complete
+	
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if(args.length != 4)
@@ -48,7 +51,7 @@ public class CommandPillarSpawn extends CommandBase {
 		
 		World world = sender.getEntityWorld();
 		if(world instanceof WorldServer)
-			StructureGenerator.placeStructureAtPosition(world.rand, schema, (WorldServer) world, pos);
+			StructureGenerator.placeStructureAtPosition(world.rand, schema, Rotation.NONE, (WorldServer) world, pos);
 		
 		sender.addChatMessage(new TextComponentString("Placed down structure " + name));
 	}

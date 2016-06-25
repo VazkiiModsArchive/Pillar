@@ -51,6 +51,8 @@ public final class StructureLoader {
 			}
 		}
 		
+		Pillar.proxy.resetTemplateManager();
+		
 		Pillar.log("Finished structure loading. " + loadedSchemas.size() + " Structures loaded.");
 	}
 	

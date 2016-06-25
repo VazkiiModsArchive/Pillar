@@ -26,7 +26,7 @@ public final class StructureSchema {
 	public int maxY, minY;
 	
 	public int offsetX, offsetY, offsetZ;
-	public Mirror mirrorType;
+	public Mirror mirrorType; // TODO Change these to strings that aren't dependant on obfuscation
 	public Rotation rotation;
 	public boolean ignoreEntities;
 	
@@ -46,7 +46,7 @@ public final class StructureSchema {
 	public int fillingMetadata;
 	public FillingType fillingType;
 	
-	public LootTable lootTableData;
+	public LootTable lootTableData; // TODO move to own system
 	public boolean lootTableMode;
 	
 	@Override
