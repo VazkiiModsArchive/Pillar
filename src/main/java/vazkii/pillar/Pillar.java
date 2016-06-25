@@ -1,0 +1,29 @@
+/**
+ * This class was created by <Vazkii>. It's distributed as
+ * part of the Pillar Mod. Get the Source Code in github:
+ * https://github.com/Vazkii/Pillar
+ * 
+ * Pillar is Open Source and distributed under the
+ * [ADD-LICENSE-HERE]
+ * 
+ * File Created @ [25/06/2016, 18:03:20 (GMT)]
+ */
+package vazkii.pillar;
+
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
+import vazkii.pillar.proxy.CommonProxy;
+
+@Mod(modid = Pillar.MOD_ID, name = Pillar.MOD_NAME, version = Pillar.VERSION, dependencies = Pillar.DEPENDENCIES)
+public class Pillar {
+
+	public static final String MOD_ID = "Pillar";
+	public static final String MOD_NAME = "Pillar";
+	public static final String BUILD = "GRADLE:BUILD";
+	public static final String VERSION = "GRADLE:VERSION-" + BUILD;
+	public static final String DEPENDENCIES = "required-after:Forge@[12.17.0.1909,);";
+
+	@SidedProxy(clientSide = "vazkii.pillar.proxy.ClientProxy", serverSide = "vazkii.pillar.proxy.CommonProxy")
+	public static CommonProxy proxy;
+	
+}
