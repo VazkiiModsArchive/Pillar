@@ -17,6 +17,8 @@ import java.util.Random;
 
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.EnumAction;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -27,6 +29,7 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.fml.common.IWorldGenerator;
 import vazkii.pillar.proxy.CommonProxy;
+import vazkii.pillar.schema.GeneratorType;
 import vazkii.pillar.schema.StructureSchema;
 
 public class WorldGenerator implements IWorldGenerator {
@@ -40,16 +43,22 @@ public class WorldGenerator implements IWorldGenerator {
 		List<StructureSchema> schemaList = new ArrayList(StructureLoader.loadedSchemas.values());
 		Collections.shuffle(schemaList, random);
 		for(StructureSchema schema : schemaList) {
-			boolean did = generateStructure(schema, random, world, chunkX, chunkZ);
+			EnumActionResult res = generateStructure(schema, random, world, chunkX, chunkZ);
+			if(res == EnumActionResult.PASS)
+				continue;
 			
-			if(did)
+			if(res == EnumActionResult.SUCCESS)
 				structuresGenerated++;
+			
 			if(structuresGenerated >= CommonProxy.maxStructuresInOneChunk)
 				break;
 		}
 	}
 	
-	public boolean generateStructure(StructureSchema schema, Random random, World world, int chunkX, int chunkZ) {
+	public EnumActionResult generateStructure(StructureSchema schema, Random random, World world, int chunkX, int chunkZ) {
+		if(schema.generatorType == GeneratorType.NONE)
+			return EnumActionResult.PASS;
+		
 		int rarity = (int) (schema.rarity * CommonProxy.rarityMultiplier);
 		if(rarity > 0 && random.nextInt(rarity) == 0) {
 			int x = chunkX * 16 + random.nextInt(16);
@@ -64,12 +73,16 @@ public class WorldGenerator implements IWorldGenerator {
 					state = world.getBlockState(pos);
 				}
 				
-				if(canSpawnInPosition(schema, world, pos))
-					return StructureGenerator.placeStructureAtPosition(random, schema, Rotation.NONE, (WorldServer) world, pos);
+				if(canSpawnInPosition(schema, world, pos)) {
+					boolean generated = StructureGenerator.placeStructureAtPosition(random, schema, Rotation.NONE, (WorldServer) world, pos);;
+					return generated ? EnumActionResult.SUCCESS : EnumActionResult.FAIL;
+				}
 			}
+			
+			return EnumActionResult.PASS;
 		}
 		
-		return false;
+		return EnumActionResult.FAIL;
 	}
 	
 	public boolean canSpawnInPosition(StructureSchema schema, World world, BlockPos pos) {

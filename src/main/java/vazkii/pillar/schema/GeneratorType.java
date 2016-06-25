@@ -25,8 +25,8 @@ public enum GeneratorType {
 	UNDERWATER(GeneratorType::underwaterPos),
 	ABOVE_WATER(GeneratorType::aboveWaterPos),
 	SKY(GeneratorType::skyPos),
-	ANYWHERE(GeneratorType::anywherePos);
-	// TODO NONE
+	ANYWHERE(GeneratorType::anywherePos),
+	NONE(GeneratorType::disallow);
 
 	private GeneratorType(BlockPosProvider provider) {
 		this.provider = provider;
@@ -90,6 +90,10 @@ public enum GeneratorType {
 		IBlockState state = world.getBlockState(pos);
 
 		return pos;
+	}
+	
+	private static BlockPos disallow(StructureSchema schema, Random random, World world, BlockPos xzPos) {
+		return null;
 	}
 	
 	private static boolean isInYBounds(StructureSchema schema, int y) {
