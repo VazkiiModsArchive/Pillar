@@ -10,8 +10,11 @@
  */
 package vazkii.pillar;
 
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import vazkii.pillar.proxy.CommonProxy;
 
 @Mod(modid = Pillar.MOD_ID, name = Pillar.MOD_NAME, version = Pillar.VERSION, dependencies = Pillar.DEPENDENCIES)
@@ -25,5 +28,10 @@ public class Pillar {
 
 	@SidedProxy(clientSide = "vazkii.pillar.proxy.ClientProxy", serverSide = "vazkii.pillar.proxy.CommonProxy")
 	public static CommonProxy proxy;
+	
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent event) {
+		proxy.preInit(event);
+	}
 	
 }
