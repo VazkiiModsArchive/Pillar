@@ -18,7 +18,6 @@ import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import scala.reflect.api.StandardLiftables.StandardUnliftableInstances;
 import vazkii.pillar.StructureLoader;
 import vazkii.pillar.WorldGenerator;
 

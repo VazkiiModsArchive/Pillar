@@ -38,8 +38,10 @@ public final class StructureSchema {
 	public boolean isBiomeNameSpawnsBlacklist;
 	public boolean isBiomeTagSpawnsBlacklist;
 
-	public int integrity, decay;
+	public float integrity, decay;
 	public int rarity;
+	public String filling;
+	public int fillingMetadata;
 	
 	public LootTable lootTableData;
 	public boolean lootTableMode;

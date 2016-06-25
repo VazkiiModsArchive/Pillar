@@ -13,6 +13,9 @@ package vazkii.pillar;
 import java.util.Random;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockStoneBrick;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
@@ -31,24 +34,25 @@ public final class StructureGenerator {
 	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, WorldServer world, BlockPos pos) {
 		if(pos == null)
 			return false;
-		
+
 		MinecraftServer minecraftserver = world.getMinecraftServer();
 		TemplateManager templatemanager = CommonProxy.templateManager;
 		Template template = templatemanager.func_189942_b(minecraftserver, new ResourceLocation(schema.structureName));
 
 		if(template == null)
 			return false;
-		
+
 		if(CommonProxy.devMode)
 			Pillar.log("Generating Structure " +  schema.structureName + " at " + pos);
 
 		PlacementSettings settings = new PlacementSettings();
 		settings.setMirror(schema.mirrorType);
-		
+
+		Rotation rot = schema.rotation;
 		if(schema.rotation == null)
-			settings.setRotation(Rotation.values()[rand.nextInt(Rotation.values().length)]);
-		else settings.setRotation(schema.rotation);
-		
+			rot = Rotation.values()[rand.nextInt(Rotation.values().length)];
+
+		settings.setRotation(rot);
 		settings.setIgnoreEntities(schema.ignoreEntities);
 		settings.setChunk((ChunkPos) null);
 		settings.setReplacedBlock((Block) null);
@@ -58,7 +62,50 @@ public final class StructureGenerator {
 
 		BlockPos finalPos = pos.add(schema.offsetX, schema.offsetY, schema.offsetZ);
 		template.addBlocksToWorldChunk(world, finalPos, settings);
-		
+
+		BlockPos size = template.getSize();
+		if(schema.decay > 0) {
+			for(int i = 0; i < size.getX(); i++)
+				for(int j = 0; j < size.getY(); j++)
+					for(int k = 0; k < size.getZ(); k++) {
+						BlockPos currPos = finalPos.add(template.transformedBlockPos(settings, new BlockPos(i, j, k)));
+						IBlockState state = world.getBlockState(currPos);
+						if(state.getBlock() == Blocks.STONEBRICK && state.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
+							world.setBlockState(currPos, state.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED));
+					}
+		}
+
+		if(schema.filling != null && !schema.filling.isEmpty()) {
+			Block block = Block.getBlockFromName(schema.filling);
+			if(block != null)
+				for(int i = 0; i < size.getX(); i++)
+					for(int j = 0; j < size.getZ(); j++) {
+						BlockPos currPos = finalPos.add(template.transformedBlockPos(settings, new BlockPos(i, 0, j)));
+						IBlockState currState = world.getBlockState(currPos);
+						if(currState.getBlock().isAir(currState, world, currPos))
+							continue;
+						
+						int k = -1;
+						while(true) {
+							BlockPos checkPos = currPos.add(0, k, 0);
+							IBlockState state = world.getBlockState(checkPos);
+							if(state.getBlock().isAir(state, world, checkPos) || state.getBlock().isReplaceable(world, checkPos)) {
+								IBlockState newState = block.getStateFromMeta(schema.fillingMetadata);
+								
+								if(schema.decay > 0 && newState.getBlock() == Blocks.STONEBRICK && newState.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
+									newState = newState.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED);
+								
+								world.setBlockState(checkPos, newState);
+							} else break;
+
+							if(checkPos.getY() == 0)
+								break;
+							
+							k--;
+						}
+					}
+		}
+
 		return true;
 	}
 
