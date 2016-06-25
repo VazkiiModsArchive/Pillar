@@ -34,7 +34,7 @@ public final class StructureLoader {
 	private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	public static void loadStructures() {
-		log("Loading structures...");
+		Pillar.log("Loading structures...");
 		File[] files = CommonProxy.pillarDir.listFiles((File f) -> {
 			if(!f.getName().endsWith(".json"))
 				return false;
@@ -48,15 +48,16 @@ public final class StructureLoader {
 			try {
 				StructureSchema schema = gson.<StructureSchema>fromJson(new FileReader(f), new TypeToken<StructureSchema>(){}.getType());
 				schema.structureName = getStructureNBTLocation(f.getName()).replaceAll("\\.nbt$", "");
-				log("Loaded schema " + schema.structureName);
-				if(schema != null)
+				if(schema != null && schema.generatorType != null) {
+					Pillar.log("Loaded schema " + schema.structureName);
 					loadedSchemas.add(schema);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 		
-		log("Finished structure loading. " + loadedSchemas.size() + " Structures loaded.");
+		Pillar.log("Finished structure loading. " + loadedSchemas.size() + " Structures loaded.");
 	}
 	
 	public static String getStructureNBTLocation(String jsonFileName) {
@@ -67,10 +68,6 @@ public final class StructureLoader {
 	
 	public static String jsonifySchema(StructureSchema schema) {
 		return gson.toJson(schema);
-	}
-	
-	public static void log(String m) {
-		FMLLog.log(Level.INFO, "[Pillar] %s", m);
 	}
 	
 }

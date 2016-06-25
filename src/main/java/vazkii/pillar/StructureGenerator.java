@@ -10,17 +10,15 @@
  */
 package vazkii.pillar;
 
+import java.util.Random;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.tileentity.TileEntityStructure;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
-import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
@@ -30,19 +28,25 @@ import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureGenerator {
 
-	public static void placeStructureAtPosition(StructureSchema schema, WorldServer world, BlockPos pos) {
+	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, WorldServer world, BlockPos pos) {
+		if(pos == null)
+			return false;
+		
 		MinecraftServer minecraftserver = world.getMinecraftServer();
 		TemplateManager templatemanager = CommonProxy.templateManager;
 		Template template = templatemanager.func_189942_b(minecraftserver, new ResourceLocation(schema.structureName));
 
 		if(template == null)
-			return;
+			return false;
+		
+		if(CommonProxy.devMode)
+			Pillar.log("Generating Structure " +  schema.structureName + " at " + pos);
 
 		PlacementSettings settings = new PlacementSettings();
 		settings.setMirror(schema.mirrorType);
 		
 		if(schema.rotation == null)
-			settings.setRotation(Rotation.values()[world.rand.nextInt(Rotation.values().length)]);
+			settings.setRotation(Rotation.values()[rand.nextInt(Rotation.values().length)]);
 		else settings.setRotation(schema.rotation);
 		
 		settings.setIgnoreEntities(schema.ignoreEntities);
@@ -54,6 +58,8 @@ public final class StructureGenerator {
 
 		BlockPos finalPos = pos.add(schema.offsetX, schema.offsetY, schema.offsetZ);
 		template.addBlocksToWorldChunk(world, finalPos, settings);
+		
+		return true;
 	}
 
 

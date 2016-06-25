@@ -12,11 +12,15 @@ package vazkii.pillar.proxy;
 
 import java.io.File;
 
+import com.typesafe.config.Config;
+
 import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import scala.reflect.api.StandardLiftables.StandardUnliftableInstances;
 import vazkii.pillar.StructureLoader;
+import vazkii.pillar.WorldGenerator;
 
 public class CommonProxy {
 
@@ -25,12 +29,18 @@ public class CommonProxy {
 	public static TemplateManager templateManager;
 	
 	public static boolean devMode;
-	
+	public static float rarityMultiplier;
+	public static int maxStructuresInOneChunk;
+	public static int generatorWeight;
+
 	public void preInit(FMLPreInitializationEvent event) {
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 		
 		config.load();
 		devMode = config.getBoolean("Dev Mode", Configuration.CATEGORY_GENERAL, false, "");
+		rarityMultiplier = config.getFloat("Rarity Multiplier", Configuration.CATEGORY_GENERAL, 1F, 0F, Float.MAX_VALUE, "");
+		maxStructuresInOneChunk = config.getInt("Max Structures In One Chunk", Configuration.CATEGORY_GENERAL, 1, 1, Integer.MAX_VALUE, "");
+		generatorWeight = config.getInt("Generator Weight", Configuration.CATEGORY_GENERAL, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, "The weight to apply to Pillar's generator. Higher weight generators will spawn their structures before other mods'");
 		
 		if(config.hasChanged())
 			config.save();
@@ -46,6 +56,7 @@ public class CommonProxy {
 		templateManager = new TemplateManager(structureDir.getAbsolutePath());
 		
 		StructureLoader.loadStructures();
+		GameRegistry.registerWorldGenerator(new WorldGenerator(), generatorWeight);
 	}
 	
 }

@@ -33,6 +33,10 @@ public final class StructureSchema {
 	public List<Integer> dimensionSpawns;
 	public List<String> biomeNameSpawns;
 	public List<String> biomeTagSpawns;
+	
+	public boolean isDimensionSpawnsBlacklist;
+	public boolean isBiomeNameSpawnsBlacklist;
+	public boolean isBiomeTagSpawnsBlacklist;
 
 	public int integrity, decay;
 	public int rarity;

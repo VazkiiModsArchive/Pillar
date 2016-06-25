@@ -10,7 +10,10 @@
  */
 package vazkii.pillar;
 
+import org.apache.logging.log4j.Level;
+
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -32,6 +35,10 @@ public class Pillar {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		proxy.preInit(event);
+	}
+	
+	public static void log(String m) {
+		FMLLog.log(Level.INFO, "[Pillar] %s", m);
 	}
 	
 }
