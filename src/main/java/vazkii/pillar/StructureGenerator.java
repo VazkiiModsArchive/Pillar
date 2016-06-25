@@ -19,7 +19,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockStoneBrick;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.EnumFaceDirection;
+import net.minecraft.command.CommandResultStats.Type;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntityChest;
@@ -30,11 +32,14 @@ import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
-import net.minecraft.world.storage.loot.LootTableList;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import vazkii.pillar.proxy.CommonProxy;
 import vazkii.pillar.schema.StructureSchema;
 
@@ -89,7 +94,7 @@ public final class StructureGenerator {
 						BlockPos currPos = finalPos.add(template.transformedBlockPos(settings, new BlockPos(i, j, k)));
 						IBlockState state = world.getBlockState(currPos);
 						if(state.getBlock() == Blocks.STONEBRICK && state.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
-							world.setBlockState(currPos, state.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED), 0);
+							world.setBlockState(currPos, state.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED));
 					}
 		}
 
@@ -100,7 +105,7 @@ public final class StructureGenerator {
 					for(int j = 0; j < size.getZ(); j++) {
 						BlockPos currPos = finalPos.add(template.transformedBlockPos(settings, new BlockPos(i, 0, j)));
 						IBlockState currState = world.getBlockState(currPos);
-						if(currState.getBlock().isAir(currState, world, currPos))
+						if(currState.getBlock().isAir(currState, world, currPos) || currState.getBlock() == Blocks.STRUCTURE_BLOCK)
 							continue;
 						
 						int k = -1;
@@ -113,7 +118,7 @@ public final class StructureGenerator {
 								if(schema.decay > 0 && newState.getBlock() == Blocks.STONEBRICK && newState.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
 									newState = newState.withProperty(BlockStoneBrick.VARIANT, rand.nextBoolean() ? BlockStoneBrick.EnumType.MOSSY : BlockStoneBrick.EnumType.CRACKED);
 								
-								world.setBlockState(checkPos, newState, 0);
+								world.setBlockState(checkPos, newState);
 							} else break;
 
 							if(checkPos.getY() == 0)
@@ -129,7 +134,7 @@ public final class StructureGenerator {
         for(Entry<BlockPos, String> entry : dataBlocks.entrySet()) {
         	BlockPos entryPos = entry.getKey();
         	String data = entry.getValue();
-        	world.setBlockState(entryPos, Blocks.AIR.getDefaultState(), 0);
+        	world.setBlockState(entryPos, Blocks.AIR.getDefaultState());
         	handleData(rand, schema, settings, entryPos, data, world);
         }
 
@@ -146,13 +151,20 @@ public final class StructureGenerator {
 		String command = data.replaceAll("\\s.*", "").toLowerCase();
 		
 		if(dataHandlers.containsKey(command)) {
-			data = data.replaceAll(".*\\s", "");
+			data = data.replaceAll("^.*?\\s", "");
 			dataHandlers.get(command).handleData(rand, schema, settings, pos, data, world);
 		}
 	}
 	
 	private static void commandRun(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		StructureCommandSender.world = world;
+		StructureCommandSender.position = pos;
 		
+		if(data.startsWith("/"))
+			data = data.substring(1);
+		
+		MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+		server.getCommandManager().executeCommand(StructureCommandSender.INSTANCE, data);
 	}
 	
 	private static void commandChest(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
@@ -170,7 +182,7 @@ public final class StructureGenerator {
 		
 		facing = settings.getRotation().rotate(facing);
 		
-		world.setBlockState(pos, Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing), 0);
+		world.setBlockState(pos, Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing));
 		
 		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
 		chest.setLootTable(new ResourceLocation(lootTable), rand.nextLong());
@@ -182,7 +194,7 @@ public final class StructureGenerator {
 		if(tokens.length == 0)
 			return;
 		
-		world.setBlockState(pos, Blocks.MOB_SPAWNER.getDefaultState(), 0);
+		world.setBlockState(pos, Blocks.MOB_SPAWNER.getDefaultState());
 		
 		TileEntityMobSpawner spawner = (TileEntityMobSpawner) world.getTileEntity(pos);
 		spawner.getSpawnerBaseLogic().setEntityName(tokens[0]);
@@ -198,6 +210,70 @@ public final class StructureGenerator {
 
 	private static interface DataHandler {
 		public void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world);
+	}
+	
+	public static class StructureCommandSender implements ICommandSender {
+		
+		public static final StructureCommandSender INSTANCE = new StructureCommandSender();
+		
+		public static World world;
+		public static BlockPos position;
+
+		@Override
+		public void addChatMessage(ITextComponent p_145747_1_) { 
+			System.out.println(p_145747_1_.getFormattedText());
+		}
+
+		@Override
+		public boolean canCommandSenderUseCommand(int p_70003_1_, String p_70003_2_) {
+			return p_70003_1_ <= 2;
+		}
+
+		@Override
+		public World getEntityWorld() {
+			return world;
+		}
+
+		@Override
+		public String getName() {
+			return "Pillar-executor";
+		}
+
+		@Override
+		public ITextComponent getDisplayName() {
+			return null;
+		}
+
+		@Override
+		public BlockPos getPosition() {
+			return position;
+		}
+
+		@Override
+		public Entity getCommandSenderEntity() {
+			return null;
+		}
+
+		@Override
+		public boolean sendCommandFeedback() {
+			return false;
+		}
+
+		@Override
+		public void setCommandStat(Type type, int amount) {
+			// NO-OP
+		}
+
+		@Override
+		public Vec3d getPositionVector() {
+			return new Vec3d(position.getX() + 0.5, position.getY() + 0.5, position.getZ() + 0.5);
+		}
+
+		@Override
+		public MinecraftServer getServer() {
+			return world.getMinecraftServer();
+		}
+
 	}
 	
 }
