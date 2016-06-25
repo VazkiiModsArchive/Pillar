@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.EnumFaceDirection;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
@@ -165,22 +166,30 @@ public final class StructureGenerator {
 		
 		EnumFacing facing = EnumFacing.byName(orientation);
 		if(facing == null)
-			facing = EnumFacing.SOUTH;
+			facing = EnumFacing.NORTH;
 		
 		facing = settings.getRotation().rotate(facing);
 		
-		world.setBlockState(pos, Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing));
+		world.setBlockState(pos, Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing), 0);
 		
 		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
 		chest.setLootTable(new ResourceLocation(lootTable), rand.nextLong());
 	}
 	
 	private static void commandSpawner(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
+		String[] tokens = data.split("\\s");
 		
+		if(tokens.length == 0)
+			return;
+		
+		world.setBlockState(pos, Blocks.MOB_SPAWNER.getDefaultState(), 0);
+		
+		TileEntityMobSpawner spawner = (TileEntityMobSpawner) world.getTileEntity(pos);
+		spawner.getSpawnerBaseLogic().setEntityName(tokens[0]);
 	}
 	
 	private static void commandStruct(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world) {
-		
+		// TODO
 	}
 	
 	private static String[] tokenize(String data) {
