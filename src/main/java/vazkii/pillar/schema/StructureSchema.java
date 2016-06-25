@@ -37,11 +37,14 @@ public final class StructureSchema {
 	public boolean isDimensionSpawnsBlacklist;
 	public boolean isBiomeNameSpawnsBlacklist;
 	public boolean isBiomeTagSpawnsBlacklist;
-
+	public boolean generateEverywhere;
+	
 	public float integrity, decay;
 	public int rarity;
+	
 	public String filling;
 	public int fillingMetadata;
+	public FillingType fillingType;
 	
 	public LootTable lootTableData;
 	public boolean lootTableMode;

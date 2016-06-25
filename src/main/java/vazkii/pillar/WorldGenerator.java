@@ -72,7 +72,7 @@ public class WorldGenerator implements IWorldGenerator {
 	}
 	
 	public boolean canSpawnInPosition(StructureSchema schema, World world, BlockPos pos) {
-		if(schema.isDimensionSpawnsBlacklist && schema.isBiomeNameSpawnsBlacklist && schema.isBiomeTagSpawnsBlacklist)
+		if(schema.generateEverywhere)
 			return true;
 		
 		if(!schema.dimensionSpawns.isEmpty()) {

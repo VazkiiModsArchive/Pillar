@@ -24,7 +24,8 @@ public enum GeneratorType {
 	UNDERGROUND(GeneratorType::undergroundPos),
 	UNDERWATER(GeneratorType::underwaterPos),
 	ABOVE_WATER(GeneratorType::aboveWaterPos),
-	SKY(GeneratorType::skyPos);
+	SKY(GeneratorType::skyPos),
+	ANYWHERE(GeneratorType::anywherePos);
 
 	private GeneratorType(BlockPosProvider provider) {
 		this.provider = provider;
@@ -79,6 +80,14 @@ public enum GeneratorType {
 		if(!world.canBlockSeeSky(pos) || !state.getBlock().isAir(state, world, pos))
 			return null;
 		
+		return pos;
+	}
+	
+	private static BlockPos anywherePos(StructureSchema schema, Random random, World world, BlockPos xzPos) {
+		int y = getYFromBounds(schema, random, 1, 256);
+		BlockPos pos = new BlockPos(xzPos.getX(), y, xzPos.getZ());
+		IBlockState state = world.getBlockState(pos);
+
 		return pos;
 	}
 	

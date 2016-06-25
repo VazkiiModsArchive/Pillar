@@ -41,6 +41,7 @@ import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import vazkii.pillar.proxy.CommonProxy;
+import vazkii.pillar.schema.FillingType;
 import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureGenerator {
@@ -65,6 +66,13 @@ public final class StructureGenerator {
 		if(template == null)
 			return false;
 
+		BlockPos size = template.getSize();
+		int top = pos.getY() + size.getY(); 
+		if(top >= 256) {
+			int shift = top - 256;
+			pos.add(0, -shift, 0);
+		}
+		
 		if(CommonProxy.devMode)
 			Pillar.log("Generating Structure " +  schema.structureName + " at " + pos);
 
@@ -86,7 +94,6 @@ public final class StructureGenerator {
 		BlockPos finalPos = pos.add(schema.offsetX, schema.offsetY, schema.offsetZ);
 		template.addBlocksToWorldChunk(world, finalPos, settings);
 
-		BlockPos size = template.getSize();
 		if(schema.decay > 0) {
 			for(int i = 0; i < size.getX(); i++)
 				for(int j = 0; j < size.getY(); j++)
@@ -108,11 +115,15 @@ public final class StructureGenerator {
 						if(currState.getBlock().isAir(currState, world, currPos) || currState.getBlock() == Blocks.STRUCTURE_BLOCK)
 							continue;
 						
+						FillingType type = schema.fillingType;
+						if(type == null)
+							type = FillingType.AIR;
+						
 						int k = -1;
 						while(true) {
 							BlockPos checkPos = currPos.add(0, k, 0);
 							IBlockState state = world.getBlockState(checkPos);
-							if(state.getBlock().isAir(state, world, checkPos) || state.getBlock().isReplaceable(world, checkPos)) {
+							if(type.canFill(world, state, checkPos)) {
 								IBlockState newState = block.getStateFromMeta(schema.fillingMetadata);
 								
 								if(schema.decay > 0 && newState.getBlock() == Blocks.STONEBRICK && newState.getValue(BlockStoneBrick.VARIANT) == BlockStoneBrick.EnumType.DEFAULT && rand.nextFloat() < schema.decay)
