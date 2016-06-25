@@ -36,8 +36,8 @@ public class WorldGenerator implements IWorldGenerator {
 			return;
 
 		int structuresGenerated = 0;
-		List<StructureSchema> schemaList = new ArrayList(StructureLoader.loadedSchemas);
-		Collections.shuffle(schemaList);
+		List<StructureSchema> schemaList = new ArrayList(StructureLoader.loadedSchemas.values());
+		Collections.shuffle(schemaList, random);
 		for(StructureSchema schema : schemaList) {
 			boolean did = generateStructure(schema, random, world, chunkX, chunkZ);
 			

@@ -18,6 +18,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import vazkii.pillar.command.CommandPillarReload;
+import vazkii.pillar.command.CommandPillarSpawn;
 import vazkii.pillar.proxy.CommonProxy;
 
 @Mod(modid = Pillar.MOD_ID, name = Pillar.MOD_NAME, version = Pillar.VERSION, dependencies = Pillar.DEPENDENCIES)
@@ -35,6 +39,12 @@ public class Pillar {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		proxy.preInit(event);
+	}
+	
+	@EventHandler
+	public void serverStarting(FMLServerStartingEvent event) {
+		event.registerServerCommand(new CommandPillarReload());
+		event.registerServerCommand(new CommandPillarSpawn());
 	}
 	
 	public static void log(String m) {

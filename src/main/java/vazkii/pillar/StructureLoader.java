@@ -11,26 +11,20 @@
 package vazkii.pillar;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.logging.log4j.Level;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-import net.minecraftforge.fml.common.FMLLog;
 import vazkii.pillar.proxy.CommonProxy;
 import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureLoader {
 
-	public static final List<StructureSchema> loadedSchemas = new ArrayList();
+	public static final Map<String, StructureSchema> loadedSchemas = new HashMap();
 	private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	public static void loadStructures() {
@@ -50,7 +44,7 @@ public final class StructureLoader {
 				schema.structureName = getStructureNBTLocation(f.getName()).replaceAll("\\.nbt$", "");
 				if(schema != null && schema.generatorType != null) {
 					Pillar.log("Loaded schema " + schema.structureName);
-					loadedSchemas.add(schema);
+					loadedSchemas.put(schema.structureName, schema);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
