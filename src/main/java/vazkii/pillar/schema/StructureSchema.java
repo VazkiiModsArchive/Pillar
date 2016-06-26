@@ -46,9 +46,6 @@ public final class StructureSchema {
 	public int fillingMetadata;
 	public FillingType fillingType;
 	
-	public LootTable lootTableData; // TODO move to own system
-	public boolean lootTableMode;
-	
 	@Override
 	public String toString() {
 		return StructureLoader.jsonifySchema(this);

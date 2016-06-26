@@ -11,6 +11,12 @@
 package vazkii.pillar.proxy;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.apache.commons.compress.utils.IOUtils;
 
 import com.typesafe.config.Config;
 
@@ -18,11 +24,14 @@ import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import vazkii.pillar.Pillar;
 import vazkii.pillar.StructureLoader;
 import vazkii.pillar.WorldGenerator;
 
 public class CommonProxy { // TODO doesn't look like a proxy is needed, re-order
 
+	public static final String TEMPLATE_FILE = "_template.json";
+	
 	public static File pillarDir;
 	public static File structureDir;
 	public static TemplateManager templateManager;
@@ -46,8 +55,6 @@ public class CommonProxy { // TODO doesn't look like a proxy is needed, re-order
 		if(config.hasChanged())
 			config.save();
 		
-		// TODO template file
-		
 		pillarDir = new File(event.getModConfigurationDirectory().getParentFile(), "pillar");
 		if(!pillarDir.exists())
 			pillarDir.mkdir();
@@ -56,6 +63,20 @@ public class CommonProxy { // TODO doesn't look like a proxy is needed, re-order
 		if(!structureDir.exists())
 			structureDir.mkdir();
 
+		File template = new File(pillarDir, TEMPLATE_FILE);
+		if(!template.exists()) {
+			try {
+				template.createNewFile();
+				InputStream inStream = Pillar.class.getResourceAsStream("/assets/pillar/" + TEMPLATE_FILE);
+				System.out.println(inStream);
+				OutputStream outStream = new FileOutputStream(template);
+				IOUtils.copy(inStream, outStream);
+				inStream.close();
+				outStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		StructureLoader.loadStructures();
 		GameRegistry.registerWorldGenerator(new WorldGenerator(), generatorWeight);

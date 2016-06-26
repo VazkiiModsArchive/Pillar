@@ -24,7 +24,7 @@ import vazkii.pillar.command.CommandPillarReload;
 import vazkii.pillar.command.CommandPillarSpawn;
 import vazkii.pillar.proxy.CommonProxy;
 
-@Mod(modid = Pillar.MOD_ID, name = Pillar.MOD_NAME, version = Pillar.VERSION, dependencies = Pillar.DEPENDENCIES, serverSideOnly = true)
+@Mod(modid = Pillar.MOD_ID, name = Pillar.MOD_NAME, version = Pillar.VERSION, dependencies = Pillar.DEPENDENCIES)
 public class Pillar {
 
 	public static final String MOD_ID = "Pillar";

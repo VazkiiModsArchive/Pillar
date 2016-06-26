@@ -11,9 +11,15 @@
 package vazkii.pillar;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.compress.utils.IOUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,7 +36,7 @@ public final class StructureLoader {
 	public static void loadStructures() {
 		Pillar.log("Loading structures...");
 		File[] files = CommonProxy.pillarDir.listFiles((File f) -> {
-			if(!f.getName().endsWith(".json"))
+			if(!f.getName().endsWith(".json") || f.getName().equals(CommonProxy.TEMPLATE_FILE))
 				return false;
 
 			File f1 = new File(CommonProxy.structureDir, getStructureNBTLocation(f.getName()));
