@@ -54,6 +54,7 @@ public final class StructureGenerator {
 		dataHandlers.put("chest", StructureGenerator::commandChest);
 		dataHandlers.put("spawner", StructureGenerator::commandSpawner);
 		dataHandlers.put("struct", StructureGenerator::commandStruct);
+		dataHandlers.put("load_loot_table", StructureGenerator::commandLoadLootTable);
 	}
 	
 	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, Rotation baseRotation, WorldServer world, BlockPos pos) {
@@ -210,6 +211,16 @@ public final class StructureGenerator {
 			StructureLoader.copyNeededLootTable(world, res.getResourcePath());
 		
 		chest.setLootTable(res, rand.nextLong());
+	}
+	
+	private static void commandLoadLootTable(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
+		String[] tokens = data.split("\\s");
+		
+		if(tokens.length == 0)
+			return;
+		
+		String lootTable = tokens[0];
+		StructureLoader.copyNeededLootTable(world, lootTable);
 	}
 	
 	private static void commandSpawner(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
