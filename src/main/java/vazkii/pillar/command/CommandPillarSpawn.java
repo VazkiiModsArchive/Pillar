@@ -35,12 +35,12 @@ public class CommandPillarSpawn extends CommandBase {
 
 	@Override
 	public String getCommandUsage(ICommandSender sender) {
-		return "pillar-spawn <structure name> <x> <y> <z>";
+		return "pillar-spawn <structure name> <x> <y> <z> [<rotation>]";
 	}
 	
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-		if(args.length != 4 && args.length != 1)
+		if(args.length != 5 && args.length != 4 && args.length != 1)
 			throw new CommandException("Wrong argument length.");
 		
 		String name = args[0];
@@ -49,12 +49,29 @@ public class CommandPillarSpawn extends CommandBase {
 		StructureSchema schema = StructureLoader.loadedSchemas.get(name);
 		if(schema == null)
 			throw new CommandException("There's no structure with that name.");
+
+		Rotation rot = Rotation.NONE;
+		
+		if(args.length > 4) {
+			switch(args[4]) {
+			case "90": 
+			case "-270":
+				rot = Rotation.CLOCKWISE_90;
+				break;
+			case "180":
+			case "-180":
+				rot =  Rotation.CLOCKWISE_180;
+				break;
+			case "270":
+			case "-90":
+				rot =  Rotation.COUNTERCLOCKWISE_90;
+				break;
+			}
+		}
 		
 		World world = sender.getEntityWorld();
 		if(world instanceof WorldServer)
-			StructureGenerator.placeStructureAtPosition(world.rand, schema, Rotation.NONE, (WorldServer) world, pos);
-		
-		// TODO add rotation
+			StructureGenerator.placeStructureAtPosition(world.rand, schema, rot, (WorldServer) world, pos, true);
 		
 		sender.addChatMessage(new TextComponentString("Placed down structure " + name));
 	}
