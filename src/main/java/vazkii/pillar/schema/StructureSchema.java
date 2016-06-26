@@ -50,6 +50,9 @@ public final class StructureSchema {
 	}
 
 	public Mirror getMirrorType() {
+		if(rotation == null)
+			return Mirror.NONE;
+		
 		switch(mirrorType) {
 		case "mirror_left_right":
 		case "LEFT_RIGHT":
@@ -62,6 +65,9 @@ public final class StructureSchema {
 	}
 
 	public Rotation getRotation() {
+		if(rotation == null)
+			return null;
+		
 		switch(rotation) {
 		case "90": 
 		case "-270":

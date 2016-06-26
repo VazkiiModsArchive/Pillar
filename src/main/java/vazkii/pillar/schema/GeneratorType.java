@@ -22,6 +22,7 @@ public enum GeneratorType {
 
 	SURFACE(GeneratorType::surfacePos),
 	UNDERGROUND(GeneratorType::undergroundPos),
+	// TODO UDNERGROUND_VISIBLE
 	UNDERWATER(GeneratorType::underwaterPos),
 	ABOVE_WATER(GeneratorType::aboveWaterPos),
 	SKY(GeneratorType::skyPos),

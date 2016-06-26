@@ -39,6 +39,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
+import net.minecraft.world.storage.loot.LootTableManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import vazkii.pillar.schema.FillingType;
 import vazkii.pillar.schema.StructureSchema;
@@ -202,9 +203,13 @@ public final class StructureGenerator {
 		facing = settings.getRotation().rotate(facing);
 		
 		world.setBlockState(pos, Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, facing));
-		
 		TileEntityChest chest = (TileEntityChest) world.getTileEntity(pos);
-		chest.setLootTable(new ResourceLocation(lootTable), rand.nextLong());
+		
+		ResourceLocation res = new ResourceLocation(lootTable);
+		if(res.getResourceDomain().equals("pillar"))
+			StructureLoader.copyNeededLootTable(world, res.getResourcePath());
+		
+		chest.setLootTable(res, rand.nextLong());
 	}
 	
 	private static void commandSpawner(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {

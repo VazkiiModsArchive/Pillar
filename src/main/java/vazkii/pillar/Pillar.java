@@ -20,6 +20,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.Level;
 
 import net.minecraft.world.gen.structure.template.TemplateManager;
+import net.minecraft.world.storage.loot.LootTableManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Mod;
@@ -43,6 +44,8 @@ public class Pillar {
 
 	public static File pillarDir;
 	public static File structureDir;
+	public static File lootTablesDir;
+
 	public static TemplateManager templateManager;
 
 	public static boolean devMode;
@@ -50,6 +53,11 @@ public class Pillar {
 	public static int maxStructuresInOneChunk;
 	public static int generatorWeight;
 	public static int maximumGenerationIterations;
+	
+	// Obfuscation stuff
+	public static final String[] OBF_REGISTERED_LOOT_TABES = {
+			"c", "field_186527_c", "registeredLootTables"
+	};
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -72,6 +80,10 @@ public class Pillar {
 		structureDir = new File(pillarDir, "structures");
 		if(!structureDir.exists())
 			structureDir.mkdir();
+		
+		lootTablesDir = new File(pillarDir, "loot_tables");
+		if(!lootTablesDir.exists())
+			lootTablesDir.mkdir();
 
 		File template = new File(pillarDir, TEMPLATE_FILE);
 		if(!template.exists()) {
@@ -88,11 +100,11 @@ public class Pillar {
 			}
 		}
 
-		StructureLoader.loadStructures();
+		StructureLoader.loadStructures(null);
 		GameRegistry.registerWorldGenerator(new WorldGenerator(), generatorWeight);
 	}
 	
-	public static void resetTemplateManager() {
+	public static void resetManagers() {
 		templateManager = new TemplateManager(structureDir.getAbsolutePath());
 	}
 

@@ -33,7 +33,7 @@ public class CommandPillarReload extends CommandBase {
 
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-		StructureLoader.loadStructures();
+		StructureLoader.loadStructures(sender.getEntityWorld());
 		
 		sender.addChatMessage(new TextComponentString("Reloaded structures. There are " + StructureLoader.loadedSchemas.size() + " structures currently loaded."));
 	}
