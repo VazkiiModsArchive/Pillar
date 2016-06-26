@@ -74,7 +74,7 @@ public class WorldGenerator implements IWorldGenerator {
 					}
 
 				if(canSpawnInPosition(schema, world, pos)) {
-					boolean generated = StructureGenerator.placeStructureAtPosition(random, schema, Rotation.NONE, (WorldServer) world, pos);
+					boolean generated = StructureGenerator.placeStructureAtPosition(random, schema, Rotation.NONE, (WorldServer) world, pos, true);
 					return generated ? EnumActionResult.SUCCESS : EnumActionResult.FAIL;
 				}
 			}
