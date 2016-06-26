@@ -28,6 +28,7 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import vazkii.pillar.command.CommandPillarCopy;
 import vazkii.pillar.command.CommandPillarReload;
 import vazkii.pillar.command.CommandPillarSpawn;
 
@@ -112,6 +113,7 @@ public class Pillar {
 	public void serverStarting(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandPillarReload());
 		event.registerServerCommand(new CommandPillarSpawn());
+		event.registerServerCommand(new CommandPillarCopy());
 	}
 
 	public static void log(String m) {

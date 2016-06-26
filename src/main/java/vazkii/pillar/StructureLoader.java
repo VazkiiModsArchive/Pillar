@@ -15,29 +15,30 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.common.cache.LoadingCache;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import net.minecraft.util.Mirror;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTableManager;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import vazkii.pillar.schema.FillingType;
+import vazkii.pillar.schema.GeneratorType;
 import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureLoader {
 
 	public static final Map<String, StructureSchema> loadedSchemas = new HashMap();
-	
+
 	private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	
+	private static StructureSchema defaultSchema;
+
 	public static void loadStructures(World world) {
 		Pillar.log("Loading structures...");
 		
@@ -126,5 +127,41 @@ public final class StructureLoader {
 	public static String jsonifySchema(StructureSchema schema) {
 		return gson.toJson(schema);
 	}
-	
+
+	public static StructureSchema getDefaultSchema() {
+		if (defaultSchema != null)
+			return defaultSchema;
+
+		defaultSchema = new StructureSchema();
+		defaultSchema.generatorType = GeneratorType.NONE;
+		defaultSchema.minY = -1;
+		defaultSchema.maxY = -1;
+		defaultSchema.offsetX = 0;
+		defaultSchema.offsetY = 0;
+		defaultSchema.offsetZ = 0;
+
+		defaultSchema.mirrorType = "NONE";
+		defaultSchema.rotation = null;
+		defaultSchema.ignoreEntities = false;
+
+		defaultSchema.dimensionSpawns = Collections.emptyList();
+		defaultSchema.biomeNameSpawns = Collections.emptyList();
+		defaultSchema.biomeTagSpawns = Collections.emptyList();
+		defaultSchema.isDimensionSpawnsBlacklist = false;
+		defaultSchema.isBiomeNameSpawnsBlacklist = false;
+		defaultSchema.isBiomeTagSpawnsBlacklist = false;
+		defaultSchema.generateEverywhere = false;
+
+		defaultSchema.integrity = 1;
+		defaultSchema.decay = 0;
+
+		defaultSchema.filling = "";
+		defaultSchema.fillingMetadata = 0;
+		defaultSchema.fillingType = FillingType.AIR;
+
+		defaultSchema.rarity = 100;
+
+		return defaultSchema;
+	}
+
 }
