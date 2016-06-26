@@ -61,12 +61,6 @@ public class Pillar {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		// TODO remove debugs
-		System.out.println("Testing 1");
-		StructureGenerator.handleFunctions(new Random(), "$run_if(0.5)$ struct pillar:dungeon_centerpiece$rand_i(0;4)$");
-		System.out.println("Testing 2");
-		StructureGenerator.handleFunctions(new Random(), "spawner $rand_s(Zombie;20;Skeleton;20;Spider;20;Creeper;20)$");
-		
 		Configuration config = new Configuration(event.getSuggestedConfigurationFile());
 
 		config.load();

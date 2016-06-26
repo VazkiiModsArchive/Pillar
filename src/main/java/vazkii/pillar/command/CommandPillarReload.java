@@ -38,6 +38,9 @@ public class CommandPillarReload extends CommandBase {
 		sender.addChatMessage(new TextComponentString("Reloaded structures. There are " + StructureLoader.loadedSchemas.size() + " structures currently loaded."));
 	}
 	
-	// TODO lower level
-
+	@Override
+	public int getRequiredPermissionLevel() {
+		return 2;
+	}
+	
 }
