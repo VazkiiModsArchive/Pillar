@@ -19,16 +19,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import vazkii.pillar.Pillar;
-import vazkii.pillar.StructureLoader;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,10 +66,17 @@ public class CommandPillarCopy extends CommandBase {
 						FileUtils.copyFileToDirectory(file, Pillar.structureDir);
 						File jsonFile = new File(Pillar.pillarDir, fileName.replaceAll("\\.nbt$", ".json"));
 						if (!jsonFile.exists()) {
-							String schemaJson = StructureLoader.jsonifySchema(StructureLoader.getDefaultSchema());
-							FileWriter fileWriter = new FileWriter(jsonFile);
-							fileWriter.write(schemaJson);
-							fileWriter.close();
+							try {
+								jsonFile.createNewFile();
+								InputStream inStream = Pillar.class.getResourceAsStream("/assets/pillar/" + Pillar.TEMPLATE_FILE);
+								System.out.println(inStream);
+								OutputStream outStream = new FileOutputStream(jsonFile);
+								IOUtils.copy(inStream, outStream);
+								inStream.close();
+								outStream.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
 						sender.addChatMessage(new TextComponentString("Successfully copied structure '" + fileName.replaceAll("\\.nbt$", "") + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
 						return;

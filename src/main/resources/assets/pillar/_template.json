@@ -5,7 +5,7 @@
 // ===================================================================
 
 {
-	"generatorType": "",
+	"generatorType": "NONE",
 	"minY": -1,
 	"maxY": -1,
 	"offsetX": 0,
@@ -31,5 +31,5 @@
 	"fillingMetadata": 0,
 	"fillingType": "AIR",
 	
-	"rarity": 100,
+	"rarity": 100
 }
