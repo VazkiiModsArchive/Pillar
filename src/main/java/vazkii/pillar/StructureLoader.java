@@ -55,6 +55,7 @@ public final class StructureLoader {
 		loadedSchemas.clear();
 		for(File f : files) {
 			try {
+				Pillar.log("Loading " + f.getName());
 				StructureSchema schema = gson.<StructureSchema>fromJson(new FileReader(f), new TypeToken<StructureSchema>(){}.getType());
 				schema.structureName = getStructureNBTLocation(f.getName()).replaceAll("\\.nbt$", "");
 				if(schema != null && schema.generatorType != null) {

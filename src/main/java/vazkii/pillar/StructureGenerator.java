@@ -10,10 +10,16 @@
  */
 package vazkii.pillar;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
@@ -29,6 +35,7 @@ import net.minecraft.tileentity.TileEntityMobSpawner;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
+import net.minecraft.util.WeightedRandom;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -39,14 +46,18 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
-import net.minecraft.world.storage.loot.LootTableManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import vazkii.pillar.schema.FillingType;
 import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureGenerator {
 	
+	private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\$(.*?)\\((.*?)\\)\\$");
+	private static final Pattern TOKENIZING_PATTERN = Pattern.compile("\\s*(?<!\\\\);\\s*");
+	
 	private static final HashMap<String, DataHandler> dataHandlers = new HashMap();
+	private static final HashMap<String, Function> functions = new HashMap();
+
 	private static int iteration;
 	
 	static {
@@ -55,6 +66,10 @@ public final class StructureGenerator {
 		dataHandlers.put("spawner", StructureGenerator::commandSpawner);
 		dataHandlers.put("struct", StructureGenerator::commandStruct);
 		dataHandlers.put("load_loot_table", StructureGenerator::commandLoadLootTable);
+		
+		functions.put("rand_i", StructureGenerator::functionRandomInteger);
+		functions.put("rand_s", StructureGenerator::functionRandomString);
+		functions.put("run_if", StructureGenerator::functionRunIf);
 	}
 	
 	public static boolean placeStructureAtPosition(Random rand, StructureSchema schema, Rotation baseRotation, WorldServer world, BlockPos pos) {
@@ -166,7 +181,7 @@ public final class StructureGenerator {
 		if(data == null || data.isEmpty())
 			return;
 		
-		// TODO Function handling
+		data = handleFunctions(rand, data);
 		
 		data = data.replaceAll("\\/\\*\\*.*", "").trim();
 		String command = data.replaceAll("\\s.*", "").toLowerCase();
@@ -175,6 +190,36 @@ public final class StructureGenerator {
 			data = data.replaceAll("^.*?\\s", "");
 			dataHandlers.get(command).handleData(rand, schema, settings, pos, data, world, iteration);
 		}
+	}
+	
+	public static String handleFunctions(Random rand, String data) {
+		while(true) {
+			Pair<Integer, Integer> boundaries = findFunction(data);
+			if(boundaries == null)
+				break;
+			
+			String functionStr = data.substring(boundaries.getLeft(), boundaries.getRight());
+			
+			functionStr = functionStr.substring(1, functionStr.length() - 2);
+			
+			int opener = functionStr.indexOf("(");
+			String functionName = functionStr.substring(0, opener);
+			String params = functionStr.substring(opener + 1);
+			
+			String result = "";
+			Function function = functions.get(functionName.toLowerCase());
+			
+			if(function != null)
+				try {
+					result = function.handle(tokenize(params), rand);
+				} catch(IllegalArgumentException e) {
+					e.printStackTrace();
+				}
+			
+			data = data.substring(0, boundaries.getLeft()) + result + data.substring(boundaries.getRight());
+		}
+		
+		return data;
 	}
 	
 	private static void commandRun(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
@@ -280,10 +325,69 @@ public final class StructureGenerator {
 		placeStructureAtPosition(rand, newSchema, rotation, world, finalPos, iteration + 1);
 	}
 	
+	private static String functionRandomInteger(String[] params, Random rand) {
+		if(params.length != 2)
+			throw new IllegalArgumentException("rand_i function needs two number parameters");
+		
+		int lower = Integer.parseInt(params[0]);
+		int upper = Integer.parseInt(params[1]);
+		
+		if(upper < lower) {
+			int i = lower;
+			lower = upper;
+			upper = i;
+		}
+		
+		int diff = upper - lower;
+		if(diff == 0)
+			return Integer.toString(lower);
+		
+		return Integer.toString(rand.nextInt(diff) + lower);
+	}
+	
+	private static String functionRandomString(String[] params, Random rand) {
+		if(params.length % 2 != 0)
+			throw new IllegalArgumentException("rand_s function needs an even number of parameters");
+
+		List<WeightedString> strings = new ArrayList();
+		int len = params.length / 2;
+		
+		for(int i = 0; i < len; i++) {
+			String s = params[i * 2];
+			int w = Integer.parseInt(params[i * 2 + 1]);
+			strings.add(new WeightedString(w, s));
+		}
+		
+		return WeightedRandom.getRandomItem(rand, strings).s;
+	}
+	
+	private static String functionRunIf(String[] params, Random rand) {
+		if(params.length != 1)
+			throw new IllegalArgumentException("run_if function needs a single parameter");
+		
+		double chance = Double.parseDouble(params[0]);
+		if(rand.nextDouble() < chance)
+			return "/**";
+		
+		return "";
+	}
+	
 	private static String[] tokenize(String data) {
-		return data.split("\\s*(?<!\\);\\s*");
+		Matcher matcher = TOKENIZING_PATTERN.matcher(data);
+		if(!matcher.find())
+			return new String[] { data };
+		
+		return data.split(TOKENIZING_PATTERN.pattern());
 	}
 
+	private static Pair<Integer, Integer> findFunction(String s) {
+		Matcher matcher = FUNCTION_PATTERN.matcher(s);
+		if(!matcher.find())
+			return null;
+		
+		return Pair.of(matcher.start(), matcher.end());
+	}
+	
 	private static int toInt(String s, int def) {
 		try {
 			int i = Integer.parseInt(s);
@@ -291,11 +395,25 @@ public final class StructureGenerator {
 		} catch(NumberFormatException e) {
 			return def;
 		}
-		
 	}
 	
 	private static interface DataHandler {
 		public void handleData(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration);
+	}
+	
+	private static interface Function {
+		public String handle(String[] params, Random rand);
+	}
+	
+	private static class WeightedString extends WeightedRandom.Item {
+
+		public final String s;
+		
+		public WeightedString(int itemWeightIn, String s) {
+			super(itemWeightIn);
+			this.s = s;
+		}
+		
 	}
 	
 	public static class StructureCommandSender implements ICommandSender {
