@@ -2,11 +2,11 @@
  * This class was created by <TehNut>. It's distributed as
  * part of the Pillar Mod. Get the Source Code in github:
  * https://github.com/Vazkii/Pillar
- * <p>
+ *
  * Pillar is Open Source and distributed under the
  * [ADD-LICENSE-HERE]
- * <p>
- * File Created @ [25/06/2016, 21:09:43 (GMT)]
+ *
+ * File Created @ [26/06/2016, 15:14:28 (GMT)]
  */
 package vazkii.pillar.command;
 
