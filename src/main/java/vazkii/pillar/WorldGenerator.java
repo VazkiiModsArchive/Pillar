@@ -107,12 +107,15 @@ public class WorldGenerator implements IWorldGenerator {
 			return !schema.isBiomeNameSpawnsBlacklist;
 
 		BiomeDictionary.Type[] types = BiomeDictionary.getTypesForBiome(biome);
-		for(BiomeDictionary.Type type : types) {
-			if(schema.isBiomeTagSpawnsBlacklist && !schema.biomeTagSpawns.contains(type.name()))
-				return true;
+		if(schema.isBiomeNameSpawnsBlacklist) {
+			for(BiomeDictionary.Type type : types)
+				if(schema.biomeTagSpawns.contains(type.name()))
+					return false;
+			
+			return true;
+		} else for(BiomeDictionary.Type type : types)
 			if(schema.biomeTagSpawns.contains(type.name()))
-				return !schema.isBiomeTagSpawnsBlacklist;
-		}
+				return true;
 
 		return false;
 	}

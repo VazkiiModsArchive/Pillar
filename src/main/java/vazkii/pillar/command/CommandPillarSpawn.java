@@ -54,6 +54,8 @@ public class CommandPillarSpawn extends CommandBase {
 		if(world instanceof WorldServer)
 			StructureGenerator.placeStructureAtPosition(world.rand, schema, Rotation.NONE, (WorldServer) world, pos);
 		
+		// TODO add rotation
+		
 		sender.addChatMessage(new TextComponentString("Placed down structure " + name));
 	}
 	
