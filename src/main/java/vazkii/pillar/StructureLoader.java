@@ -11,21 +11,14 @@
 package vazkii.pillar;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.compress.utils.IOUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import vazkii.pillar.proxy.CommonProxy;
 import vazkii.pillar.schema.StructureSchema;
 
 public final class StructureLoader {
@@ -35,11 +28,11 @@ public final class StructureLoader {
 	
 	public static void loadStructures() {
 		Pillar.log("Loading structures...");
-		File[] files = CommonProxy.pillarDir.listFiles((File f) -> {
-			if(!f.getName().endsWith(".json") || f.getName().equals(CommonProxy.TEMPLATE_FILE))
+		File[] files = Pillar.pillarDir.listFiles((File f) -> {
+			if(!f.getName().endsWith(".json") || f.getName().equals(Pillar.TEMPLATE_FILE))
 				return false;
 
-			File f1 = new File(CommonProxy.structureDir, getStructureNBTLocation(f.getName()));
+			File f1 = new File(Pillar.structureDir, getStructureNBTLocation(f.getName()));
 			return f1.exists();
 		});
 		
@@ -57,7 +50,7 @@ public final class StructureLoader {
 			}
 		}
 		
-		Pillar.proxy.resetTemplateManager();
+		Pillar.resetTemplateManager();
 		
 		Pillar.log("Finished structure loading. " + loadedSchemas.size() + " Structures loaded.");
 	}

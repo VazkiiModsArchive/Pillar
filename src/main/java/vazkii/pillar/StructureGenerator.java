@@ -40,7 +40,6 @@ import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import vazkii.pillar.proxy.CommonProxy;
 import vazkii.pillar.schema.FillingType;
 import vazkii.pillar.schema.StructureSchema;
 
@@ -64,11 +63,11 @@ public final class StructureGenerator {
 		if(pos == null)
 			return false;
 
-		if(iteration > CommonProxy.maximumGenerationIterations)
+		if(iteration > Pillar.maximumGenerationIterations)
 			return false;
 		
 		MinecraftServer minecraftserver = world.getMinecraftServer();
-		TemplateManager templatemanager = CommonProxy.templateManager;
+		TemplateManager templatemanager = Pillar.templateManager;
 		Template template = templatemanager.func_189942_b(minecraftserver, new ResourceLocation(schema.structureName));
 
 		if(template == null)
@@ -81,7 +80,7 @@ public final class StructureGenerator {
 			pos.add(0, -shift, 0);
 		}
 		
-		if(CommonProxy.devMode && iteration == 0)
+		if(Pillar.devMode && iteration == 0)
 			Pillar.log("Generating Structure " +  schema.structureName + " at " + pos);
 
 		PlacementSettings settings = new PlacementSettings();
