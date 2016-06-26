@@ -2,10 +2,10 @@
  * This class was created by <TehNut>. It's distributed as
  * part of the Pillar Mod. Get the Source Code in github:
  * https://github.com/Vazkii/Pillar
- *
+ * <p>
  * Pillar is Open Source and distributed under the
  * [ADD-LICENSE-HERE]
- *
+ * <p>
  * File Created @ [25/06/2016, 21:09:43 (GMT)]
  */
 package vazkii.pillar.command;
@@ -25,33 +25,35 @@ import vazkii.pillar.Pillar;
 import vazkii.pillar.StructureLoader;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommandPillarCopy extends CommandBase {
 
-    private static final FileFilter NBT_FILTER = (FileFilter) FileFilterUtils.suffixFileFilter(".nbt");
+	private static final FileFilter NBT_FILTER = (FileFilter) FileFilterUtils.suffixFileFilter(".nbt");
 
-    @Override
-    public String getCommandName() {
-        return "pillar-copy";
-    }
+	@Override
+	public String getCommandName() {
+		return "pillar-copy";
+	}
 
-    @Override
-    public String getCommandUsage(ICommandSender sender) {
-        return "pillar-copy <sourceFile>";
-    }
+	@Override
+	public String getCommandUsage(ICommandSender sender) {
+		return "pillar-copy <sourceFile>";
+	}
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        try {
-            if (args.length > 0) {
-                File structureFolder = server.getActiveAnvilConverter().getFile(server.getFolderName(), "structures");
-                if (!structureFolder.exists() || structureFolder.isFile()) {
-                    sender.addChatMessage(new TextComponentString("The world's structure folder could not be found.").setStyle(new Style().setColor(TextFormatting.RED)));
-                    return;
-                }
+	@Override
+	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+		try {
+			if (args.length > 0) {
+				File structureFolder = server.getActiveAnvilConverter().getFile(server.getFolderName(), "structures");
+				if (!structureFolder.exists() || structureFolder.isFile()) {
+					throw new CommandException("The world's structure folder could not be found.");
+				}
 
 				String requestedName = "";
 				if (args.length != 1)
@@ -60,44 +62,44 @@ public class CommandPillarCopy extends CommandBase {
 				else
 					requestedName = args[0];
 
-                File[] structures = structureFolder.listFiles(NBT_FILTER);
-                for (File file : structures) {
+				File[] structures = structureFolder.listFiles(NBT_FILTER);
+				for (File file : structures) {
 					String fileName = file.getName();
-                    if (fileName.equalsIgnoreCase(requestedName + ".nbt")) {
-                        FileUtils.copyFileToDirectory(file, Pillar.structureDir);
-						File jsonFile = new File(Pillar.pillarDir, fileName.replace(".nbt", ".json"));
+					if (fileName.equalsIgnoreCase(requestedName + ".nbt")) {
+						FileUtils.copyFileToDirectory(file, Pillar.structureDir);
+						File jsonFile = new File(Pillar.pillarDir, fileName.replaceAll("\\.nbt$", ".json"));
 						if (!jsonFile.exists()) {
 							String schemaJson = StructureLoader.jsonifySchema(StructureLoader.getDefaultSchema());
 							FileWriter fileWriter = new FileWriter(jsonFile);
 							fileWriter.write(schemaJson);
 							fileWriter.close();
 						}
-						sender.addChatMessage(new TextComponentString("Successfully copied structure '" + fileName.replace(".nbt", "") + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
+						sender.addChatMessage(new TextComponentString("Successfully copied structure '" + fileName.replaceAll("\\.nbt$", "") + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
 						return;
-                    }
-                }
+					}
+				}
 
-				sender.addChatMessage(new TextComponentString("No structure file by that name was found!").setStyle(new Style().setColor(TextFormatting.RED)));
-            } else {
+				throw new CommandException("No structure file by that name was found!");
+			} else {
 				throw new WrongUsageException("/" + getCommandUsage(sender));
 			}
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-    @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
+	@Override
+	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
 		if (args.length == 1) {
 			List<String> files = new ArrayList<>();
 			File structureFolder = server.getActiveAnvilConverter().getFile(server.getFolderName(), "structures");
 			File[] structures = structureFolder.listFiles(NBT_FILTER);
 			for (File structure : structures)
-				files.add(structure.getName().replace(".nbt", ""));
+				files.add(structure.getName().replaceAll("\\.nbt$", ""));
 
 			return getListOfStringsMatchingLastWord(args, files);
 		}
-        return super.getTabCompletionOptions(server, sender, args, pos);
-    }
+		return super.getTabCompletionOptions(server, sender, args, pos);
+	}
 
 }
