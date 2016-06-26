@@ -20,22 +20,28 @@ import net.minecraft.world.chunk.Chunk;
 
 public enum GeneratorType {
 
-	SURFACE(GeneratorType::surfacePos),
-	UNDERGROUND(GeneratorType::undergroundPos),
-	// TODO UDNERGROUND_VISIBLE
-	UNDERWATER(GeneratorType::underwaterPos),
-	ABOVE_WATER(GeneratorType::aboveWaterPos),
-	SKY(GeneratorType::skyPos),
-	ANYWHERE(GeneratorType::anywherePos),
-	NONE(GeneratorType::disallow);
+	SURFACE(true, GeneratorType::surfacePos),
+	UNDERGROUND(true, GeneratorType::undergroundPos),
+	UNDERWATER(true, GeneratorType::underwaterPos),
+	ABOVE_WATER(true, GeneratorType::aboveWaterPos),
+	SKY(false, GeneratorType::skyPos),
+	ANYWHERE(false, GeneratorType::anywherePos),
+	NONE(false, GeneratorType::disallow);
 
-	private GeneratorType(BlockPosProvider provider) {
+	private GeneratorType(boolean findLowest, BlockPosProvider provider) {
 		this.provider = provider;
+		this.findLowest = findLowest;
 	}
+	
 	private BlockPosProvider provider;
+	private boolean findLowest;
 	
 	public BlockPos getGenerationPosition(StructureSchema schema, Random random, World world, BlockPos xzPos) {
 		return provider.getGenerationPosition(schema, random, world, xzPos);
+	}
+	
+	public boolean shouldFindLowestBlock() {
+		return findLowest;
 	}
 	
 	private static BlockPos surfacePos(StructureSchema schema, Random random, World world, BlockPos xzPos) {

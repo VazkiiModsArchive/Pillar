@@ -44,19 +44,19 @@ public class WorldGenerator implements IWorldGenerator {
 			EnumActionResult res = generateStructure(schema, random, world, chunkX, chunkZ);
 			if(res == EnumActionResult.PASS)
 				continue;
-			
+
 			if(res == EnumActionResult.SUCCESS)
 				structuresGenerated++;
-			
+
 			if(structuresGenerated >= Pillar.maxStructuresInOneChunk)
 				break;
 		}
 	}
-	
+
 	public EnumActionResult generateStructure(StructureSchema schema, Random random, World world, int chunkX, int chunkZ) {
 		if(schema.generatorType == GeneratorType.NONE)
 			return EnumActionResult.PASS;
-		
+
 		int rarity = (int) (schema.rarity * Pillar.rarityMultiplier);
 		if(rarity > 0 && random.nextInt(rarity) == 0) {
 			int x = chunkX * 16 + random.nextInt(16);
@@ -66,44 +66,55 @@ public class WorldGenerator implements IWorldGenerator {
 
 			if(pos != null) {
 				IBlockState state = world.getBlockState(pos);
-				while(state.getBlock().isReplaceable(world, pos) && !(state.getBlock() instanceof BlockLiquid)) {
-					pos = pos.down();
-					state = world.getBlockState(pos);
-				}
-				
+
+				if(schema.generatorType.shouldFindLowestBlock())
+					while(state.getBlock().isReplaceable(world, pos) && !(state.getBlock() instanceof BlockLiquid)) {
+						pos = pos.down();
+						state = world.getBlockState(pos);
+					}
+
 				if(canSpawnInPosition(schema, world, pos)) {
-					boolean generated = StructureGenerator.placeStructureAtPosition(random, schema, Rotation.NONE, (WorldServer) world, pos);;
+					boolean generated = StructureGenerator.placeStructureAtPosition(random, schema, Rotation.NONE, (WorldServer) world, pos);
 					return generated ? EnumActionResult.SUCCESS : EnumActionResult.FAIL;
 				}
 			}
-			
+
 			return EnumActionResult.PASS;
 		}
-		
+
 		return EnumActionResult.FAIL;
 	}
-	
+
 	public boolean canSpawnInPosition(StructureSchema schema, World world, BlockPos pos) {
 		if(schema.generateEverywhere)
 			return true;
-		
+
 		if(!schema.dimensionSpawns.isEmpty()) {
 			int dim = world.provider.getDimension();
-			return schema.dimensionSpawns.contains(dim) == schema.isDimensionSpawnsBlacklist;
+			if(schema.isDimensionSpawnsBlacklist && schema.dimensionSpawns.contains(dim))
+				return false;
+
+			if(!schema.isDimensionSpawnsBlacklist && !schema.dimensionSpawns.contains(dim))
+				return false;
 		}
-		
+
 		Biome biome = world.getBiomeGenForCoords(pos);
 		String name = biome.getRegistryName().toString();
-		if(schema.biomeNameSpawns.contains(name))
+
+		if(schema.isBiomeNameSpawnsBlacklist && !schema.biomeNameSpawns.contains(name))
+			return true;
+		if(schema.biomeNameSpawns.contains(name))	
 			return !schema.isBiomeNameSpawnsBlacklist;
-		
+
 		BiomeDictionary.Type[] types = BiomeDictionary.getTypesForBiome(biome);
 		for(BiomeDictionary.Type type : types) {
+			if(schema.isBiomeTagSpawnsBlacklist && !schema.biomeTagSpawns.contains(type.name()))
+				return true;
 			if(schema.biomeTagSpawns.contains(type.name()))
 				return !schema.isBiomeTagSpawnsBlacklist;
 		}
-		
+
 		return false;
 	}
-	
+
 }
