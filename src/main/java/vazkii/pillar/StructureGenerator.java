@@ -84,9 +84,9 @@ public final class StructureGenerator {
 			Pillar.log("Generating Structure " +  schema.structureName + " at " + pos);
 
 		PlacementSettings settings = new PlacementSettings();
-		settings.setMirror(schema.mirrorType);
+		settings.setMirror(schema.getMirrorType());
 
-		Rotation rot = schema.rotation;
+		Rotation rot = schema.getRotation();
 		if(schema.rotation == null)
 			rot = Rotation.values()[rand.nextInt(Rotation.values().length)];
 		rot = rot.add(baseRotation);
@@ -243,7 +243,6 @@ public final class StructureGenerator {
 		
 		if(tokens.length >= 5) {
 			String s = tokens[4];
-			System.out.println("rotation is " + s);
 			switch(s) {
 			case "90": 
 			case "-270":
