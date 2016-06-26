@@ -35,9 +35,9 @@ import vazkii.pillar.schema.StructureSchema;
 public final class StructureLoader {
 
 	public static final Map<String, StructureSchema> loadedSchemas = new HashMap();
-
+	
 	private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
+	
 	public static void loadStructures(World world) {
 		Pillar.log("Loading structures...");
 		
@@ -126,5 +126,5 @@ public final class StructureLoader {
 	public static String jsonifySchema(StructureSchema schema) {
 		return gson.toJson(schema);
 	}
-
+	
 }
