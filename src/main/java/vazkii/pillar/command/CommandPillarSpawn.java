@@ -19,7 +19,9 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import vazkii.pillar.StructureGenerator;
@@ -72,8 +74,8 @@ public class CommandPillarSpawn extends CommandBase {
 		World world = sender.getEntityWorld();
 		if(world instanceof WorldServer)
 			StructureGenerator.placeStructureAtPosition(world.rand, schema, rot, (WorldServer) world, pos, true);
-		
-		sender.addChatMessage(new TextComponentString("Placed down structure " + name));
+
+		sender.addChatMessage(new TextComponentString("Placed down structure '" + name + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
 	}
 	
 	@Override
