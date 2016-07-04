@@ -4,7 +4,7 @@
  * https://github.com/Vazkii/Pillar
  * 
  * Pillar is Open Source and distributed under the
- * [ADD-LICENSE-HERE]
+ * CC-BY-NC-SA 3.0 License: https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_GB
  * 
  * File Created @ [25/06/2016, 19:13:22 (GMT)]
  */
