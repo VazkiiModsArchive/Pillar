@@ -69,6 +69,9 @@ public class WorldGenerator implements IWorldGenerator {
 
 				if(schema.generatorType.shouldFindLowestBlock())
 					while(state.getBlock().isReplaceable(world, pos) && !(state.getBlock() instanceof BlockLiquid)) {
+						if(pos.getY() <= 0)
+							return EnumActionResult.FAIL;
+						
 						pos = pos.down();
 						state = world.getBlockState(pos);
 					}
