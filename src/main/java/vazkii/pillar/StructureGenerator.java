@@ -124,7 +124,8 @@ public final class StructureGenerator {
 
 		settings.func_189946_a(MathHelper.clamp_float(schema.integrity, 0.0F, 1.0F));
 
-		BlockPos finalPos = pos.add(schema.offsetX, schema.offsetY, schema.offsetZ);
+		BlockPos offset = template.transformedBlockPos(settings, new BlockPos(schema.offsetX, schema.offsetY, schema.offsetZ));
+		BlockPos finalPos = pos.add(offset);
 		template.addBlocksToWorldChunk(world, finalPos, settings);
 
 		if(schema.decay > 0) {
