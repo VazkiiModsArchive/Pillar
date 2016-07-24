@@ -71,7 +71,7 @@ public class WorldGenerator implements IWorldGenerator {
 					while(state.getBlock().isReplaceable(world, pos) && !(state.getBlock() instanceof BlockLiquid)) {
 						if(pos.getY() <= 0)
 							return EnumActionResult.FAIL;
-						
+
 						pos = pos.down();
 						state = world.getBlockState(pos);
 					}
@@ -109,16 +109,20 @@ public class WorldGenerator implements IWorldGenerator {
 		if(schema.biomeNameSpawns.contains(name))	
 			return !schema.isBiomeNameSpawnsBlacklist;
 
-		BiomeDictionary.Type[] types = BiomeDictionary.getTypesForBiome(biome);
-		if(schema.isBiomeNameSpawnsBlacklist) {
-			for(BiomeDictionary.Type type : types)
-				if(schema.biomeTagSpawns.contains(type.name()))
-					return false;
-			
-			return true;
-		} else for(BiomeDictionary.Type type : types)
-			if(schema.biomeTagSpawns.contains(type.name()))
+		try {
+			BiomeDictionary.Type[] types = BiomeDictionary.getTypesForBiome(biome);
+			if(schema.isBiomeNameSpawnsBlacklist) {
+				for(BiomeDictionary.Type type : types)
+					if(schema.biomeTagSpawns.contains(type.name()))
+						return false;
+
 				return true;
+			} else for(BiomeDictionary.Type type : types)
+				if(schema.biomeTagSpawns.contains(type.name()))
+					return true;
+		} catch(NullPointerException e) { 
+			// In case a biome isn't properly registered
+		}
 
 		return false;
 	}
