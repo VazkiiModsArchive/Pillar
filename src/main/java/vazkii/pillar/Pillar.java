@@ -15,11 +15,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Random;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.logging.log4j.Level;
 
+import net.minecraft.util.datafix.DataFixer;
+import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.FMLLog;
@@ -35,11 +36,11 @@ import vazkii.pillar.command.CommandPillarSpawn;
 @Mod(modid = Pillar.MOD_ID, name = Pillar.MOD_NAME, version = Pillar.VERSION, dependencies = Pillar.DEPENDENCIES, acceptableRemoteVersions="*")
 public class Pillar {
 
-	public static final String MOD_ID = "Pillar";
+	public static final String MOD_ID = "pillar";
 	public static final String MOD_NAME = "Pillar";
 	public static final String BUILD = "GRADLE:BUILD";
 	public static final String VERSION = "GRADLE:VERSION-" + BUILD;
-	public static final String DEPENDENCIES = "required-after:Forge@[12.17.0.1909,);";
+	public static final String DEPENDENCIES = "";
 
 	public static final String TEMPLATE_FILE = "_template.json";
 
@@ -105,8 +106,8 @@ public class Pillar {
 		GameRegistry.registerWorldGenerator(new WorldGenerator(), generatorWeight);
 	}
 	
-	public static void resetManagers() {
-		templateManager = new TemplateManager(structureDir.getAbsolutePath());
+	public static void resetManagers(World world) {
+		templateManager = new TemplateManager(structureDir.getAbsolutePath(), new DataFixer(0));
 	}
 
 	@EventHandler

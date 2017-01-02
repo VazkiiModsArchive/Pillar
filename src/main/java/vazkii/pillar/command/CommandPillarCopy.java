@@ -34,12 +34,12 @@ public class CommandPillarCopy extends CommandBase {
 	private static final FileFilter NBT_FILTER = (FileFilter) FileFilterUtils.suffixFileFilter(".nbt");
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "pillar-copy";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "pillar-copy <sourceFile>";
 	}
 
@@ -78,14 +78,14 @@ public class CommandPillarCopy extends CommandBase {
 								e.printStackTrace();
 							}
 						}
-						sender.addChatMessage(new TextComponentString("Successfully copied structure '" + fileName.replaceAll("\\.nbt$", "") + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
+						sender.sendMessage(new TextComponentString("Successfully copied structure '" + fileName.replaceAll("\\.nbt$", "") + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
 						return;
 					}
 				}
 
 				throw new CommandException("No structure file by that name was found!");
 			} else {
-				throw new WrongUsageException("/" + getCommandUsage(sender));
+				throw new WrongUsageException("/" + getUsage(sender));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -93,7 +93,7 @@ public class CommandPillarCopy extends CommandBase {
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
 		if (args.length == 1) {
 			List<String> files = new ArrayList<>();
 			File structureFolder = server.getActiveAnvilConverter().getFile(server.getFolderName(), "structures");
@@ -103,7 +103,7 @@ public class CommandPillarCopy extends CommandBase {
 
 			return getListOfStringsMatchingLastWord(args, files);
 		}
-		return super.getTabCompletionOptions(server, sender, args, pos);
+		return super.getTabCompletions(server, sender, args, pos);
 	}
 
 }

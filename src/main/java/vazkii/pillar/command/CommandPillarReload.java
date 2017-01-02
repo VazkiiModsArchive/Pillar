@@ -10,8 +10,6 @@
  */
 package vazkii.pillar.command;
 
-import com.sun.jna.Structure;
-
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -24,12 +22,12 @@ import vazkii.pillar.StructureLoader;
 public class CommandPillarReload extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "pillar-reload";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "";
 	}
 
@@ -37,7 +35,7 @@ public class CommandPillarReload extends CommandBase {
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		StructureLoader.loadStructures(sender.getEntityWorld());
 		
-		sender.addChatMessage(new TextComponentString("Reloaded structures. There are " + StructureLoader.loadedSchemas.size() + " structures currently loaded.").setStyle(new Style().setColor(TextFormatting.GREEN)));
+		sender.sendMessage(new TextComponentString("Reloaded structures. There are " + StructureLoader.loadedSchemas.size() + " structures currently loaded.").setStyle(new Style().setColor(TextFormatting.GREEN)));
 	}
 	
 	@Override

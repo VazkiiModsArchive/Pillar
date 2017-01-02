@@ -1,6 +1,6 @@
 [
 {
-  "modid": "Pillar",
+  "modid": "pillar",
   "name": "Pillar",
   "description": "A mod that allows for customization of structures in worldgen using 1.10 structure blocks.",
   "version": "${version}",

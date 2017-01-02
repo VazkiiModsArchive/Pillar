@@ -31,12 +31,12 @@ import vazkii.pillar.schema.StructureSchema;
 public class CommandPillarSpawn extends CommandBase {
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "pillar-spawn";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "pillar-spawn <structure name> <x> <y> <z> [<rotation>]";
 	}
 	
@@ -75,17 +75,17 @@ public class CommandPillarSpawn extends CommandBase {
 		if(world instanceof WorldServer)
 			StructureGenerator.placeStructureAtPosition(world.rand, schema, rot, (WorldServer) world, pos, true);
 
-		sender.addChatMessage(new TextComponentString("Placed down structure '" + name + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
+		sender.sendMessage(new TextComponentString("Placed down structure '" + name + "'").setStyle(new Style().setColor(TextFormatting.GREEN)));
 	}
 	
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		if(args.length == 1) {
 			List<String> list =  new ArrayList(StructureLoader.loadedSchemas.keySet());
 			return getListOfStringsMatchingLastWord(args, list);
 		}
 		
-		return super.getTabCompletionOptions(server, sender, args, pos);
+		return super.getTabCompletions(server, sender, args, pos);
 	}
 	
 	@Override

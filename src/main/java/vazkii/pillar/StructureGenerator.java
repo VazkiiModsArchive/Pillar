@@ -85,7 +85,7 @@ public final class StructureGenerator {
 
 		MinecraftServer minecraftserver = world.getMinecraftServer();
 		TemplateManager templatemanager = Pillar.templateManager;
-		Template template = templatemanager.func_189942_b(minecraftserver, new ResourceLocation(schema.structureName));
+		Template template = templatemanager.getTemplate(minecraftserver, new ResourceLocation(schema.structureName));
 
 		if(template == null)
 			return false;
@@ -122,7 +122,7 @@ public final class StructureGenerator {
 		settings.setReplacedBlock((Block) null);
 		settings.setIgnoreStructureBlock(false);
 
-		settings.func_189946_a(MathHelper.clamp_float(schema.integrity, 0.0F, 1.0F));
+		settings.setIntegrity(MathHelper.clamp(schema.integrity, 0.0F, 1.0F));
 
 		BlockPos offset = template.transformedBlockPos(settings, new BlockPos(schema.offsetX, schema.offsetY, schema.offsetZ));
 		BlockPos finalPos = pos.add(offset);
@@ -286,7 +286,7 @@ public final class StructureGenerator {
 		world.setBlockState(pos, Blocks.MOB_SPAWNER.getDefaultState());
 
 		TileEntityMobSpawner spawner = (TileEntityMobSpawner) world.getTileEntity(pos);
-		spawner.getSpawnerBaseLogic().setEntityName(tokens[0]);
+		spawner.getSpawnerBaseLogic().setEntityId(new ResourceLocation(tokens[0]));
 	}
 
 	private static void commandStruct(Random rand, StructureSchema schema, PlacementSettings settings, BlockPos pos, String data, WorldServer world, int iteration) {
@@ -433,12 +433,12 @@ public final class StructureGenerator {
 		public static BlockPos position;
 
 		@Override
-		public void addChatMessage(ITextComponent p_145747_1_) {
+		public void sendMessage(ITextComponent p_145747_1_) {
 			// NO-OP
 		}
 
 		@Override
-		public boolean canCommandSenderUseCommand(int p_70003_1_, String p_70003_2_) {
+		public boolean canUseCommand(int p_70003_1_, String p_70003_2_) {
 			return p_70003_1_ <= 2;
 		}
 

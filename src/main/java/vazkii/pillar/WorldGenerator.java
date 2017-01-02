@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
@@ -101,7 +102,7 @@ public class WorldGenerator implements IWorldGenerator {
 				return false;
 		}
 
-		Biome biome = world.getBiomeGenForCoords(pos);
+		Biome biome = world.getBiome(pos);
 		String name = biome.getRegistryName().toString();
 
 		if(schema.isBiomeNameSpawnsBlacklist && !schema.biomeNameSpawns.contains(name))
@@ -110,15 +111,15 @@ public class WorldGenerator implements IWorldGenerator {
 			return !schema.isBiomeNameSpawnsBlacklist;
 
 		try {
-			BiomeDictionary.Type[] types = BiomeDictionary.getTypesForBiome(biome);
+			Set<BiomeDictionary.Type> types = BiomeDictionary.getTypes(biome);
 			if(schema.isBiomeNameSpawnsBlacklist) {
 				for(BiomeDictionary.Type type : types)
-					if(schema.biomeTagSpawns.contains(type.name()))
+					if(schema.biomeTagSpawns.contains(type.getName()))
 						return false;
 
 				return true;
 			} else for(BiomeDictionary.Type type : types)
-				if(schema.biomeTagSpawns.contains(type.name()))
+				if(schema.biomeTagSpawns.contains(type.getName()))
 					return true;
 		} catch(NullPointerException e) { 
 			// In case a biome isn't properly registered

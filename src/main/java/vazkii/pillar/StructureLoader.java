@@ -42,7 +42,7 @@ public final class StructureLoader {
 		Pillar.log("Loading structures...");
 		
 		Pillar.log("Resetting old managers");
-		Pillar.resetManagers();
+		Pillar.resetManagers(world);
 		
 		File[] files = Pillar.pillarDir.listFiles((File f) -> {
 			if(!f.getName().endsWith(".json") || f.getName().equals(Pillar.TEMPLATE_FILE))
