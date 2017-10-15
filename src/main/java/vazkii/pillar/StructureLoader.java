@@ -103,7 +103,7 @@ public final class StructureLoader {
 		File targetFile = new File(Pillar.lootTablesDir, lootTable + ".json");
 		if(targetFile.exists())
 			try {
-				Files.copy(targetFile.toPath(), expectedFile.toPath(), StandardCopyOption.ATOMIC_MOVE);
+				Files.copy(targetFile.toPath(), expectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
